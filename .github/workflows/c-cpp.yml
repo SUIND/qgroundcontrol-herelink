@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix: 
-        config: [ { BITNESS: '32', GSTREAMER_NAME: 'armv7', CONFIG: 'installer' }, { BITNESS: '64', GSTREAMER_NAME: 'arm64', CONFIG: 'installer' }, { BITNESS: '32', GSTREAMER_NAME: 'x86', CONFIG: 'LinuxBuild' } ]
+        config: [ { BITNESS: '32', GSTREAMER_NAME: 'armv7', CONFIG: 'installer' }, { BITNESS: '64', GSTREAMER_NAME: 'arm64', CONFIG: 'installer' } ]
     defaults:
       run:
         shell: bash
@@ -62,8 +62,8 @@ jobs:
         #sudo yes | sdkmanager --licenses && sdkmanager --update
         
         #sudo $ANDROID_HOME/tools/bin/sdkmanager --uninstall "platforms;android-30" "platforms;android-29" "build-tools;30.0.0"
-        sudo $ANDROID_HOME/tools/bin/sdkmanager --uninstall "platforms;android-31" "platforms;android-30" "platforms;android-29" "platforms;android-32" "platforms;android-33" "build-tools;31.0.0" "build-tools;30.0.0" "build-tools;32.0.0" "build-tools;33.0.0"
-        sudo $ANDROID_HOME/tools/bin/sdkmanager "build-tools;25.0.3" "platforms;android-29" "platform-tools"
+        sudo $ANDROID_HOME/tools/bin/sdkmanager --uninstall "platforms;android-31" "platforms;android-30" "platforms;android-29" "platforms;android-32" "platforms;android-33" "build-tools;31.0.0" "build-tools;30.0.0" "build-tools;32.0.0" "build-tools;33.0.0" > /dev/null
+        sudo $ANDROID_HOME/tools/bin/sdkmanager "build-tools;25.0.3" "platforms;android-29" "platform-tools" > /dev/null
         
         if [ ! -f "/tmp/gstreamer-1.0-android-${GSTREAMER_NAME}-1.14.4.tar.bz2" ]; then
             wget -N --quiet https://s3-us-west-2.amazonaws.com/qgroundcontrol/dependencies/gstreamer-1.0-android-${GSTREAMER_NAME}-1.14.4.tar.bz2 -O /tmp/gstreamer-1.0-android-${GSTREAMER_NAME}-1.14.4.tar.bz2
