@@ -31,7 +31,8 @@ jobs:
           /tmp/android-ndk-r20-linux-x86_64.zip
           /tmp/Qt5.12.6-android_arm64_v8a-min.tar.bz2
           /tmp/Qt5.12.6-android_armv7-min.tar.bz2
-        key: ${{ runner.os }}
+          /home/runner/.gradle
+        key: ${{ runner.os }}-${{ matrix.config.BITNESS }}
     - name: configure
       env: 
         JOBS: 16
