@@ -104,7 +104,7 @@ jobs:
         
         export STABLE_OR_DAILY=StableBuild
         
-        qmake -r $GITHUB_WORKSPACE/qgroundcontrol.pro CONFIG+=${CONFIG} CONFIG+=${STABLE_OR_DAILY} CONFIG+=debug -spec ${SPEC}
+        qmake -r $GITHUB_WORKSPACE/qgroundcontrol.pro CONFIG+=${CONFIG} CONFIG+=${STABLE_OR_DAILY} -spec ${SPEC}
                
         make -j16 VERBOSE=1 install INSTALL_ROOT=./release/android-build/
 
