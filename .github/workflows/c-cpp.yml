@@ -113,7 +113,7 @@ jobs:
         mkdir -p ${SHADOW_BUILD_DIR} 
         cd ${SHADOW_BUILD_DIR}
         
-        export STABLE_OR_DAILY=StableBuild
+        export STABLE_OR_DAILY=DebugBuild
         
         qmake -r $GITHUB_WORKSPACE/qgroundcontrol.pro CONFIG+=${CONFIG} CONFIG+=${STABLE_OR_DAILY} -spec ${SPEC}
                
