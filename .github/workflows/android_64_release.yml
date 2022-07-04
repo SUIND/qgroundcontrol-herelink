@@ -3,14 +3,7 @@ name: Android 64-bit Release
 
 on:
   push:
-    branches:
-      - 'master'
-      - 'Stable*'
-    tags:
-      - 'v*'
   pull_request:
-    branches:
-    - '*'
 
 defaults:
   run:
