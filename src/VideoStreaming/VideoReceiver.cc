@@ -923,7 +923,6 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
             qCDebug(VideoReceiverLog) << "drop frame";
             return GST_PAD_PROBE_DROP;
         } else {
-        } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
             // reset the clock
             GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
