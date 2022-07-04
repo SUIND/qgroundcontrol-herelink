@@ -57,6 +57,10 @@ if [ "$2" = "master" ]; then
 	echo "Android package name: $QGC_PKG_NAME"
 fi
 
+QGC_PKG_NAME="org.mavlink.qgroundcontrolbeta"
+sed -i -e 's/package *= *"[^"]*"/package="'$QGC_PKG_NAME'"/' $MANIFEST_FILE
+echo "Android package name: $QGC_PKG_NAME"
+
 # android:versionCode
 if [ -n "$VERSIONCODE" ]; then
 	sed -i -e "s/android:versionCode=\"[0-9][0-9]*\"/android:versionCode=\"$VERSIONCODE\"/" $MANIFEST_FILE
