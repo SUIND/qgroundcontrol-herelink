@@ -913,7 +913,6 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
         GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
         if(GST_BUFFER_FLAG_IS_SET(buf, GST_BUFFER_FLAG_DELTA_UNIT)) { // wait for a keyframe
             // ensure we keep our valid streaming state while we are dropping buffers
-            _streaming = true;
             return GST_PAD_PROBE_DROP;
         } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
