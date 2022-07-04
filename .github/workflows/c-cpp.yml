@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: apt
-      run: sudo apt-get update && sudo apt-get install wget curl    speech-dispatcher    libgstreamer-plugins-base1.0-dev     libgstreamer1.0-0:amd64     libgstreamer1.0-dev     libudev-dev android-sdk
+      run: sudo apt-get update && sudo apt-get install wget curl    speech-dispatcher    libgstreamer-plugins-base1.0-dev     libgstreamer1.0-0:amd64     libgstreamer1.0-dev     libudev-dev android-sdk ccache
     - name: Set up JDK 1.8
       uses: joschi/setup-jdk@v2
       with:
@@ -27,12 +27,8 @@ jobs:
       uses: actions/cache@v3
       with:
         path: |
-          /tmp/gstreamer-1.0-android-${{ matrix.config.GSTREAMER_NAME }}-1.14.4.tar.bz2
-          /tmp/android-ndk-r20-linux-x86_64.zip
-          /tmp/Qt5.12.6-android_arm64_v8a-min.tar.bz2
-          /tmp/Qt5.12.6-android_armv7-min.tar.bz2
           /home/runner/.gradle
-          /tmp/shadow_build_dir
+          ~/.cache
         key: ${{ runner.os }}-${{ matrix.config.BITNESS }}
     - name: configure
       env: 
@@ -116,7 +112,7 @@ jobs:
         
         export STABLE_OR_DAILY=StableBuild
         
-        qmake -r $GITHUB_WORKSPACE/qgroundcontrol.pro CONFIG+=${CONFIG} CONFIG+=${STABLE_OR_DAILY} -spec ${SPEC}
+        qmake -r $GITHUB_WORKSPACE/qgroundcontrol.pro CONFIG+=${CONFIG} CONFIG+=${STABLE_OR_DAILY} CONFIG+=ccache -spec ${SPEC}
                
         make -j16 VERBOSE=1 install INSTALL_ROOT=./release/android-build/
 
