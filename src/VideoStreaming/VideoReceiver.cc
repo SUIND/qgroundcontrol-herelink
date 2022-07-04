@@ -758,10 +758,11 @@ VideoReceiver::startRecording(const QString &videoFile)
     gst_object_ref(_sink->parse);
     gst_object_ref(_sink->mux);
     gst_object_ref(_sink->filesink);
-
+qCDebug(VideoReceiverLog) << "Before gst_bin_add_many()";
     gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
-
+    
+qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent()";
     gst_element_sync_state_with_parent(_sink->queue);
     gst_element_sync_state_with_parent(_sink->parse);
     gst_element_sync_state_with_parent(_sink->mux);
@@ -986,7 +987,7 @@ VideoReceiver::_updateTimer()
         timeout = _videoSettings->rtspTimeout()->rawValue().toUInt();
     }
 
-    if(_videoRunning) {
+    if(_videoRunning || recording()) {
 
         time_t elapsed = 0;
         time_t lastFrame = _lastFrameTime;
@@ -1003,7 +1004,7 @@ VideoReceiver::_updateTimer()
         time_t elapsed = time(0) - _startTime;
 
         //we start the stream over 30s, but still haven't received the data, so stop the stream, and waiting for the next connect
-        if((running() || recording()) && elapsed > (time_t)timeout) {
+        if(running() && elapsed > (time_t)timeout) {
             qCritical() << "VideoReceiver::_updateTimer, stop stream ";
             stop();
         } else if(!running() && !_uri.isEmpty() && _videoSettings->streamEnabled()->rawValue().toBool()) {
