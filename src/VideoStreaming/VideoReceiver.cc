@@ -583,7 +583,7 @@ VideoReceiver::_handleEOS() {
 void
 VideoReceiver::_handleStateChanged() {
     if(_pipeline) {
-        _streaming = GST_STATE(_pipeline) == GST_STATE_PLAYING;
+        _streaming = GST_STATE(_pipeline) == GST_STATE_PLAYING || GST_STATE(_pipeline) == GST_STATE_PAUSED;
         qCDebug(VideoReceiverLog) << "State changed, _streaming:" << _streaming;
         qCDebug(VideoReceiverLog) << "State changed, GST_STATE:" << GST_STATE(_pipeline);
     }
