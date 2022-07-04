@@ -422,7 +422,7 @@ VideoReceiver::start()
             bus = nullptr;
         }
 
-        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-paused");
+        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-paused");
         running = gst_element_set_state(_pipeline, GST_STATE_PLAYING) != GST_STATE_CHANGE_FAILURE;
 
     } while(0);
@@ -476,7 +476,7 @@ VideoReceiver::start()
 
         _running = false;
     } else {
-        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-playing");
+        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-playing");
         _running = true;
         _startTime = time(0);
         qCDebug(VideoReceiverLog) << "Running";
@@ -585,6 +585,7 @@ VideoReceiver::_handleStateChanged() {
     if(_pipeline) {
         _streaming = GST_STATE(_pipeline) == GST_STATE_PLAYING;
         qCDebug(VideoReceiverLog) << "State changed, _streaming:" << _streaming;
+        qCDebug(VideoReceiverLog) << "State changed, GST_STATE:" << GST_STATE(_pipeline);
     }
 }
 #endif
@@ -778,7 +779,7 @@ VideoReceiver::startRecording(const QString &videoFile)
     gst_pad_link(_sink->teepad, sinkpad);
     gst_object_unref(sinkpad);
 
-    gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-recording");
+    gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-recording");
 
     _recording = true;
     emit recordingChanged();
@@ -911,6 +912,8 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
     if(info != nullptr && user_data != nullptr) {
         GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
         if(GST_BUFFER_FLAG_IS_SET(buf, GST_BUFFER_FLAG_DELTA_UNIT)) { // wait for a keyframe
+            // ensure we keep our valid streaming state while we are dropping buffers
+            _streaming = true;
             return GST_PAD_PROBE_DROP;
         } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
