@@ -751,6 +751,8 @@ VideoReceiver::startRecording(const QString &videoFile)
     }
     emit videoFileChanged();
 
+    g_object_set(static_cast<gpointer>(_sink->mux), "offset-to-zero", true, nullptr);
+    g_object_set(static_cast<gpointer>(_sink->mux), "streamable", true, nullptr);
     g_object_set(static_cast<gpointer>(_sink->filesink), "location", qPrintable(_videoFile), nullptr);
     qCDebug(VideoReceiverLog) << "New video file:" << _videoFile;
 
