@@ -177,9 +177,9 @@ DEFINES += EIGEN_MPL2_ONLY
 # Installer configuration
 
 installer {
-    CONFIG -= debug
-    CONFIG += debug_and_release
-    #CONFIG += release
+    CONFIG += debug
+    CONFIG -= debug_and_release
+    CONFIG -= release
     message(Build Installer)
 }
 
