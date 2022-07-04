@@ -44,6 +44,8 @@ jobs:
         set -o xtrace
         
         export PATH=$ANDROID_HOME/tools/bin:/opt/java/jdk1.8.0_131/bin:$PATH          
+        
+        ccache -s
 
         git submodule update --init --recursive
                 
@@ -115,6 +117,8 @@ jobs:
         qmake -r $GITHUB_WORKSPACE/qgroundcontrol.pro CONFIG+=${CONFIG} CONFIG+=${STABLE_OR_DAILY} CONFIG+=ccache -spec ${SPEC}
                
         make -j16 VERBOSE=1 install INSTALL_ROOT=./release/android-build/
+        
+        ccache -s
 
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2
