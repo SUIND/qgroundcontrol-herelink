@@ -762,10 +762,13 @@ qCDebug(VideoReceiverLog) << "Before gst_bin_add_many()";
     gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     
-qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent()";
-    //gst_element_sync_state_with_parent(_sink->queue);
-    //gst_element_sync_state_with_parent(_sink->parse);
-    //gst_element_sync_state_with_parent(_sink->mux);
+qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue";
+    gst_element_sync_state_with_parent(_sink->queue);
+    qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() parse";
+    gst_element_sync_state_with_parent(_sink->parse);
+    qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() mux";
+    gst_element_sync_state_with_parent(_sink->mux);
+    qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() filesink";
     gst_element_sync_state_with_parent(_sink->filesink);
 
     qCDebug(VideoReceiverLog) << "Before _keyframeWatch()";
@@ -781,6 +784,10 @@ qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent()";
     GstPad* sinkpad = gst_element_get_static_pad(_sink->queue, "sink");
     gst_pad_link(_sink->teepad, sinkpad);
     gst_object_unref(sinkpad);
+    
+    if(gst_element_set_state(GST_BIN(_pipeline), GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE) {
+        qCDebug(VideoReceiverLog) << "problem starting _pipeline Rec";
+    }
 
     qCDebug(VideoReceiverLog) << "Before gst_debug_bin_to_dot_file()";
     gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-recording");
