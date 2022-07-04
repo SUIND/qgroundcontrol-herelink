@@ -28,7 +28,12 @@ jobs:
       with:
         path: |
           /home/runner/.gradle
-          ~/.cache
+          /home/runner/.ccache
+          /tmp/gstreamer-1.0-android-${{ matrix.config.GSTREAMER_NAME }}-1.14.4.tar.bz2
+          /tmp/android-ndk-r20-linux-x86_64.zip
+          /tmp/Qt5.12.6-android_arm64_v8a-min.tar.bz2
+          /tmp/Qt5.12.6-android_armv7-min.tar.bz2
+          /home/runner/.gradle
         key: ${{ runner.os }}-${{ matrix.config.BITNESS }}
     - name: configure
       env: 
