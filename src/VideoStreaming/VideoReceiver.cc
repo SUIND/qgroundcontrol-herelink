@@ -784,10 +784,6 @@ qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue"
     GstPad* sinkpad = gst_element_get_static_pad(_sink->queue, "sink");
     gst_pad_link(_sink->teepad, sinkpad);
     gst_object_unref(sinkpad);
-    
-    if(gst_element_set_state(GST_BIN(_pipeline), GST_STATE_PLAYING) == GST_STATE_CHANGE_FAILURE) {
-        qCDebug(VideoReceiverLog) << "problem starting _pipeline Rec";
-    }
 
     qCDebug(VideoReceiverLog) << "Before gst_debug_bin_to_dot_file()";
     gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-recording");
@@ -926,6 +922,7 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
             // ensure we keep our valid streaming state while we are dropping buffers
             qCDebug(VideoReceiverLog) << "drop frame";
             return GST_PAD_PROBE_DROP;
+        } else {
         } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
             // reset the clock
