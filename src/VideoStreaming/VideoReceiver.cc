@@ -925,12 +925,12 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
         } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
             // reset the clock
-            GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
-            GstClockTime time = gst_clock_get_time(clock);
-            gst_object_unref(clock);
-            gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
-            buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
-            buf->pts = ((GstClockTime) -1);
+            //GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
+            //GstClockTime time = gst_clock_get_time(clock);
+            //gst_object_unref(clock);
+            //gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
+            //buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
+            //buf->pts = ((GstClockTime) -1);
             qCDebug(VideoReceiverLog) << "Got keyframe, stop dropping buffers";
             pThis->gotFirstRecordingKeyFrame();
         }
