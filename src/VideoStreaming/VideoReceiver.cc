@@ -711,6 +711,7 @@ VideoReceiver::startRecording(const QString &videoFile)
     _sink->teepad   = gst_element_get_request_pad(_tee, "src_%u");
     _sink->queue    = gst_element_factory_make("queue", nullptr);
     _sink->parse    = gst_element_factory_make("h264parse", nullptr);
+    _sink->rate     = gst_element_factory_make("videorate", nullptr);
     _sink->mux      = gst_element_factory_make(kVideoMuxes[muxIdx], nullptr);
     _sink->filesink = gst_element_factory_make("filesink", nullptr);
     _sink->removing = false;
@@ -759,16 +760,18 @@ VideoReceiver::startRecording(const QString &videoFile)
 
     gst_object_ref(_sink->queue);
     gst_object_ref(_sink->parse);
+    gst_object_ref(_sink->rate);
     gst_object_ref(_sink->mux);
     gst_object_ref(_sink->filesink);
 qCDebug(VideoReceiverLog) << "Before gst_bin_add_many()";
-    gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
-    gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
+    gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->rate, _sink->mux, _sink->filesink, nullptr);
+    gst_element_link_many(_sink->queue, _sink->parse, _sink->rate, _sink->mux, _sink->filesink, nullptr);
     
 qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue";
     gst_element_sync_state_with_parent(_sink->queue);
     qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() parse";
     gst_element_sync_state_with_parent(_sink->parse);
+    gst_element_sync_state_with_parent(_sink->rate);
     qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() mux";
     gst_element_sync_state_with_parent(_sink->mux);
     qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() filesink";

@@ -102,6 +102,7 @@ protected:
     {
         GstPad*         teepad;
         GstElement*     queue;
+        GstElement*     rate;
         GstElement*     mux;
         GstElement*     filesink;
         GstElement*     parse;
