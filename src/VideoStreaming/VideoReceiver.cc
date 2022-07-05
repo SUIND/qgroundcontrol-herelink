@@ -762,6 +762,8 @@ qCDebug(VideoReceiverLog) << "Before gst_bin_add_many()";
     gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     
+    gst_base_parse_set_pts_interpolation(GST_BASE_PARSE(_sink->parse), true);
+    
 qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue";
     gst_element_sync_state_with_parent(_sink->queue);
     qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() parse";
