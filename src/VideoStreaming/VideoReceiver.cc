@@ -324,7 +324,7 @@ VideoReceiver::start()
             QUrl url(_uri);
             g_object_set(static_cast<gpointer>(dataSource), "port", url.port(), nullptr);
         } else {
-            g_object_set(G_OBJECT(dataSource), "location", qPrintable(_uri), "latency", 41, "udp-reconnect", 1, "timeout", static_cast<guint64>(0), "do-retransmission", false, NULL);
+            g_object_set(G_OBJECT(dataSource), "location", qPrintable(_uri), "latency", 41, "udp-reconnect", 1, "timeout", static_cast<guint64>(0), "do-retransmission", false, "buffer-mode", 0, NULL);
         }
 
         if (isTCP || isMPEGTS) {
@@ -373,6 +373,7 @@ VideoReceiver::start()
         }
         
         g_object_set(G_OBJECT(queue1),"leaky ",2,NULL);
+        g_object_set(G_OBJECT(_videoSink),"sync ",false,NULL);
 
         if(isTaisyncUSB) {
             gst_bin_add_many(GST_BIN(_pipeline), dataSource, parser, _tee, queue, decoder, queue1, _videoSink, nullptr);
