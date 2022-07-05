@@ -752,6 +752,8 @@ VideoReceiver::startRecording(const QString &videoFile)
     }
     emit videoFileChanged();
     
+    
+    g_object_set(static_cast<gpointer>(_sink->parse), "config-interval", 1, nullptr);
     g_object_set(static_cast<gpointer>(_sink->filesink), "location", qPrintable(_videoFile), nullptr);
     qCDebug(VideoReceiverLog) << "New video file:" << _videoFile;
 
