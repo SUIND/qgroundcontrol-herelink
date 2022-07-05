@@ -22,18 +22,18 @@ jobs:
       uses: joschi/setup-jdk@v2
       with:
           java-version: 8
-    - name: Cache Primes
-      id: cache-primes
+    - name: ccache
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: ccache-${{ runner.os }}-${{ matrix.config.BITNESS }}
+    - name: Cache zips
       uses: actions/cache@v3
       with:
         path: |
           /home/runner/.gradle
-          /home/runner/.ccache
-          /tmp/gstreamer-1.0-android-${{ matrix.config.GSTREAMER_NAME }}-1.14.4.tar.bz2
           /tmp/android-ndk-r20-linux-x86_64.zip
           /tmp/Qt5.12.6-android_arm64_v8a-min.tar.bz2
           /tmp/Qt5.12.6-android_armv7-min.tar.bz2
-          /home/runner/.gradle
         key: ${{ runner.os }}-${{ matrix.config.BITNESS }}
     - name: configure
       env: 
