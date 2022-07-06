@@ -324,7 +324,7 @@ VideoReceiver::start()
             QUrl url(_uri);
             g_object_set(static_cast<gpointer>(dataSource), "port", url.port(), nullptr);
         } else {
-            g_object_set(G_OBJECT(dataSource), "location", qPrintable(_uri), "latency", 41, "udp-reconnect", 1, "timeout", static_cast<guint64>(0), "do-retransmission", false, "buffer-mode", 0, NULL);
+            g_object_set(G_OBJECT(dataSource), "location", qPrintable(_uri), "latency", 41, "udp-reconnect", 1, "timeout", static_cast<guint64>(0), "do-retransmission", false, NULL);
         }
 
         if (isTCP || isMPEGTS) {
@@ -936,9 +936,10 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
             GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
             GstClockTime time = gst_clock_get_time(clock);
             gst_object_unref(clock);
-            //gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
-            buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
-            buf->pts = ((GstClockTime) -1);
+            gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
+            gst_element_set_start_time(pThis->_pipeline, GST_CLOCK_TIME_NONE);
+            buf->dts = 0; // The offset will not apply to this current buffer, our first frame, timestamp is zero
+            buf->pts = 0;
             qCDebug(VideoReceiverLog) << "Got keyframe, stop dropping buffers";
             pThis->gotFirstRecordingKeyFrame();
         }
