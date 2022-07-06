@@ -123,6 +123,7 @@ protected:
     static GstPadProbeReturn    _unlinkCallBack         (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
     static GstPadProbeReturn    _videoSinkProbe         (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
     static GstPadProbeReturn    _keyframeWatch          (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
+    static GstPadProbeReturn    _frameWatch             (GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
 
     virtual void                _detachRecordingBranch  (GstPadProbeInfo* info);
     virtual void                _shutdownRecordingBranch();
