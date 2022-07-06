@@ -424,7 +424,7 @@ VideoReceiver::start()
             bus = nullptr;
         }
 
-        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-paused");
+        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-paused");
         running = gst_element_set_state(_pipeline, GST_STATE_PLAYING) != GST_STATE_CHANGE_FAILURE;
 
     } while(0);
@@ -478,7 +478,7 @@ VideoReceiver::start()
 
         _running = false;
     } else {
-        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-playing");
+        gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-playing");
         _running = true;
         _startTime = time(0);
         qCDebug(VideoReceiverLog) << "Running";
@@ -783,7 +783,8 @@ qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue"
     // When we hit our first keyframe, we can offset the timestamps appropriately according to the first keyframe time
     // This will ensure the first frame is a keyframe at t=0, and decoding can begin immediately on playback
     GstPad* probepad = gst_element_get_static_pad(_sink->queue, "src");
-    gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _keyframeWatch, this, nullptr); // to drop the buffer or to block the buffer?
+    gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _frameWatch, this, nullptr); // to drop the buffer or to block the buffer?
+    gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _keyframeWatch, this, nullptr); // to drop the buffer or to block the buffer?    
     gst_object_unref(probepad);
 
     qCDebug(VideoReceiverLog) << "Before gst_pad_link()";
@@ -793,7 +794,7 @@ qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue"
     gst_object_unref(sinkpad);
 
     qCDebug(VideoReceiverLog) << "Before gst_debug_bin_to_dot_file()";
-    gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "/tmp/pipeline-recording");
+    gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-recording");
 
     _recording = true;
     emit recordingChanged();
@@ -936,7 +937,7 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
             GstClockTime time = gst_clock_get_time(clock);
             gst_object_unref(clock);
             //gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
-            //buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
+            buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
             //buf->pts = ((GstClockTime) -1);
             qCDebug(VideoReceiverLog) << "Got keyframe, stop dropping buffers";
             pThis->gotFirstRecordingKeyFrame();
@@ -944,6 +945,19 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
     }
 
     return GST_PAD_PROBE_REMOVE;
+}
+
+GstPadProbeReturn
+VideoReceiver::_frameWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_data)
+{
+    Q_UNUSED(pad);
+    if(info != nullptr && user_data != nullptr) {
+        GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
+            //VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
+            buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
+    }
+
+    return GST_PAD_PROBE_OK;
 }
 #endif
 
