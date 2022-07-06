@@ -766,8 +766,8 @@ qCDebug(VideoReceiverLog) << "Before gst_bin_add_many()";
     gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
     
-    gst_base_parse_set_infer_ts(GST_BASE_PARSE(_sink->parse), true);
-    gst_base_parse_set_pts_interpolation(GST_BASE_PARSE(_sink->parse), true);
+    //gst_base_parse_set_infer_ts(GST_BASE_PARSE(_sink->parse), true);
+    //gst_base_parse_set_pts_interpolation(GST_BASE_PARSE(_sink->parse), true);
     
 qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue";
     gst_element_sync_state_with_parent(_sink->queue);
@@ -938,7 +938,7 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
             gst_object_unref(clock);
             //gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
             buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
-            //buf->pts = ((GstClockTime) -1);
+            buf->pts = ((GstClockTime) -1);
             qCDebug(VideoReceiverLog) << "Got keyframe, stop dropping buffers";
             pThis->gotFirstRecordingKeyFrame();
         }
@@ -955,6 +955,7 @@ VideoReceiver::_frameWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_dat
         GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
             //VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
             buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
+            buf->pts = ((GstClockTime) -1);
     }
 
     return GST_PAD_PROBE_OK;
