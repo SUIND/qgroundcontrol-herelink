@@ -33,6 +33,7 @@ class VideoReceiver : public QObject
 {
     Q_OBJECT
 public:
+
 #if defined(QGC_GST_STREAMING)
     Q_PROPERTY(bool             recording           READ    recording           NOTIFY recordingChanged)
 #endif
@@ -104,7 +105,6 @@ protected:
         GstElement*     queue;
         GstElement*     mux;
         GstElement*     filesink;
-        GstElement*     parse;
         gboolean        removing;
     } Sink;
 
@@ -156,3 +156,4 @@ protected:
     bool            _showFullScreen;
     VideoSettings*  _videoSettings;
 };
+

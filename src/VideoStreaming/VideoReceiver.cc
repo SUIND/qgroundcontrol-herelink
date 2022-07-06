@@ -222,7 +222,6 @@ VideoReceiver::_timeout()
 //                                   +-->queue-->decoder-->_videosink
 //                                   |
 //    datasource-->demux-->parser-->tee
-//
 //                                   ^
 //                                   |
 //                                   +-Here we will later link elements for recording
@@ -501,9 +500,10 @@ VideoReceiver::stop()
         _shutdownPipeline();
     } else if (_pipeline != nullptr && !_stopping) {
         qCDebug(VideoReceiverLog) << "Stopping _pipeline";
+        GstBus* bus = gst_pipeline_get_bus(GST_PIPELINE(_pipeline));
+        gst_bus_disable_sync_message_emission(bus);
         gst_element_send_event(_pipeline, gst_event_new_eos());
         _stopping = true;
-        GstBus* bus = gst_pipeline_get_bus(GST_PIPELINE(_pipeline));
         GstMessage* message = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE, (GstMessageType)(GST_MESSAGE_EOS|GST_MESSAGE_ERROR));
         gst_object_unref(bus);
         if(GST_MESSAGE_TYPE(message) == GST_MESSAGE_ERROR) {
@@ -681,7 +681,7 @@ VideoReceiver::_cleanupOldVideos()
 //
 //                                   +-->queue-->decoder-->_videosink
 //                                   |
-//    datasource-->demux-->parser-->tee
+//                         source-->tee
 //                                   |
 //                                   |    +--------------_sink-------------------+
 //                                   |    |                                      |
@@ -712,12 +712,11 @@ VideoReceiver::startRecording(const QString &videoFile)
     _sink           = new Sink();
     _sink->teepad   = gst_element_get_request_pad(_tee, "src_%u");
     _sink->queue    = gst_element_factory_make("queue", nullptr);
-    _sink->parse    = gst_element_factory_make("h264parse", nullptr);
     _sink->mux      = gst_element_factory_make(kVideoMuxes[muxIdx], nullptr);
     _sink->filesink = gst_element_factory_make("filesink", nullptr);
     _sink->removing = false;
 
-    if(!_sink->teepad || !_sink->queue || !_sink->mux || !_sink->filesink || !_sink->parse) {
+    if(!_sink->teepad || !_sink->queue || !_sink->mux || !_sink->filesink) {
         qCritical() << "VideoReceiver::startRecording() failed to make _sink elements";
         return;
     }
@@ -740,7 +739,7 @@ VideoReceiver::startRecording(const QString &videoFile)
                 qgcApp()->showMessage(tr("SD card is not available. Video will be saved to internal memory."));
             }
         }
-        if (savePath.isEmpty()) {
+        if(savePath.isEmpty()) {
             savePath = qgcApp()->toolbox()->settingsManager()->appSettings()->videoSavePath();
         }
         if(savePath.isEmpty()) {
@@ -752,50 +751,35 @@ VideoReceiver::startRecording(const QString &videoFile)
         _videoFile = videoFile;
     }
     emit videoFileChanged();
-    
-    //g_object_set(static_cast<gpointer>(_sink->mux), "streamable", true, nullptr);
-    g_object_set(static_cast<gpointer>(_sink->mux), "offset-to-zero", true, nullptr);
-    g_object_set(static_cast<gpointer>(_sink->parse), "config-interval", 1, nullptr);
+
     g_object_set(static_cast<gpointer>(_sink->filesink), "location", qPrintable(_videoFile), nullptr);
     qCDebug(VideoReceiverLog) << "New video file:" << _videoFile;
 
     gst_object_ref(_sink->queue);
-    gst_object_ref(_sink->parse);
     gst_object_ref(_sink->mux);
     gst_object_ref(_sink->filesink);
-qCDebug(VideoReceiverLog) << "Before gst_bin_add_many()";
-    gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
-    gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
-    
-    //gst_base_parse_set_infer_ts(GST_BASE_PARSE(_sink->parse), true);
-    //gst_base_parse_set_pts_interpolation(GST_BASE_PARSE(_sink->parse), true);
-    
-qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue";
-    gst_element_sync_state_with_parent(_sink->queue);
-    qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() parse";
-    gst_element_sync_state_with_parent(_sink->parse);
-    qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() mux";
-    gst_element_sync_state_with_parent(_sink->mux);
-    qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() filesink";
-    gst_element_sync_state_with_parent(_sink->filesink);
 
-    qCDebug(VideoReceiverLog) << "Before _keyframeWatch()";
+    gst_bin_add_many(GST_BIN(_pipeline), _sink->queue, _sink->mux, nullptr);
+    gst_element_link_many(_sink->queue, _sink->mux, nullptr);
+
+    gst_element_sync_state_with_parent(_sink->queue);
+    gst_element_sync_state_with_parent(_sink->mux);
+
     // Install a probe on the recording branch to drop buffers until we hit our first keyframe
     // When we hit our first keyframe, we can offset the timestamps appropriately according to the first keyframe time
     // This will ensure the first frame is a keyframe at t=0, and decoding can begin immediately on playback
+    // Once we have this valid frame, we attach the filesink.
+    // Attaching it here would cause the filesink to fail to preroll and to stall the pipeline for a few seconds.
     GstPad* probepad = gst_element_get_static_pad(_sink->queue, "src");
-    //gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _frameWatch, this, nullptr); // to drop the buffer or to block the buffer?
-    gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _keyframeWatch, this, nullptr); // to drop the buffer or to block the buffer?    
+    gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _keyframeWatch, this, nullptr); // to drop the buffer or to block the buffer?
     gst_object_unref(probepad);
 
-    qCDebug(VideoReceiverLog) << "Before gst_pad_link()";
     // Link the recording branch to the pipeline
     GstPad* sinkpad = gst_element_get_static_pad(_sink->queue, "sink");
     gst_pad_link(_sink->teepad, sinkpad);
     gst_object_unref(sinkpad);
 
-    qCDebug(VideoReceiverLog) << "Before gst_debug_bin_to_dot_file()";
-    gst_debug_bin_to_dot_file(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-recording");
+    GST_DEBUG_BIN_TO_DOT_FILE(GST_BIN(_pipeline), GST_DEBUG_GRAPH_SHOW_ALL, "pipeline-recording");
 
     _recording = true;
     emit recordingChanged();
@@ -832,7 +816,6 @@ void
 VideoReceiver::_shutdownRecordingBranch()
 {
     gst_bin_remove(GST_BIN(_pipelineStopRec), _sink->queue);
-    gst_bin_remove(GST_BIN(_pipelineStopRec), _sink->parse);
     gst_bin_remove(GST_BIN(_pipelineStopRec), _sink->mux);
     gst_bin_remove(GST_BIN(_pipelineStopRec), _sink->filesink);
 
@@ -841,12 +824,10 @@ VideoReceiver::_shutdownRecordingBranch()
     _pipelineStopRec = nullptr;
 
     gst_element_set_state(_sink->filesink,  GST_STATE_NULL);
-    gst_element_set_state(_sink->parse,     GST_STATE_NULL);
     gst_element_set_state(_sink->mux,       GST_STATE_NULL);
     gst_element_set_state(_sink->queue,     GST_STATE_NULL);
 
     gst_object_unref(_sink->queue);
-    gst_object_unref(_sink->parse);
     gst_object_unref(_sink->mux);
     gst_object_unref(_sink->filesink);
 
@@ -871,7 +852,7 @@ VideoReceiver::_detachRecordingBranch(GstPadProbeInfo* info)
     Q_UNUSED(info)
 
     // Also unlinks and unrefs
-    gst_bin_remove_many(GST_BIN(_pipeline), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
+    gst_bin_remove_many(GST_BIN(_pipeline), _sink->queue, _sink->mux, _sink->filesink, nullptr);
 
     // Give tee its pad back
     gst_element_release_request_pad(_tee, _sink->teepad);
@@ -881,8 +862,8 @@ VideoReceiver::_detachRecordingBranch(GstPadProbeInfo* info)
     _pipelineStopRec = gst_pipeline_new("pipeStopRec");
 
     // Put our elements from the recording branch into the temporary pipeline
-    gst_bin_add_many(GST_BIN(_pipelineStopRec), _sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
-    gst_element_link_many(_sink->queue, _sink->parse, _sink->mux, _sink->filesink, nullptr);
+    gst_bin_add_many(GST_BIN(_pipelineStopRec), _sink->queue, _sink->mux, _sink->filesink, nullptr);
+    gst_element_link_many(_sink->queue, _sink->mux, _sink->filesink, nullptr);
 
     // Add handler for EOS event
     GstBus* bus = gst_pipeline_get_bus(GST_PIPELINE(_pipelineStopRec));
@@ -928,19 +909,31 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
     if(info != nullptr && user_data != nullptr) {
         GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
         if(GST_BUFFER_FLAG_IS_SET(buf, GST_BUFFER_FLAG_DELTA_UNIT)) { // wait for a keyframe
-            // ensure we keep our valid streaming state while we are dropping buffers
-            qCDebug(VideoReceiverLog) << "drop frame";
             return GST_PAD_PROBE_DROP;
         } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
-            // reset the clock
-            //GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
-            //GstClockTime time = gst_clock_get_time(clock);
-            //gst_object_unref(clock);
-            //gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
-            //gst_element_set_start_time(pThis->_pipeline, GST_CLOCK_TIME_NONE);
-            //buf->dts = 0; // The offset will not apply to this current buffer, our first frame, timestamp is zero
-            //buf->pts = 0;
+
+            // set media file '0' offset to current timeline position - we don't want to touch other elements in the graph, except these which are downstream!
+
+            gint64 position;
+
+            if (gst_element_query_position(pThis->_pipeline, GST_FORMAT_TIME, &position) != TRUE) {
+                qCDebug(VideoReceiverLog) << "Unable to get timeline position, let's hope that downstream elements will survive";
+
+                if (buf->pts != GST_CLOCK_TIME_NONE) {
+                    position = buf->pts;
+                } else {
+                    position = gst_pad_get_offset(pad);
+                }
+            }
+
+            gst_pad_set_offset(pad, position);
+
+            // Add the filesink once we have a valid I-frame
+            gst_bin_add_many(GST_BIN(pThis->_pipeline), pThis->_sink->filesink, nullptr);
+            gst_element_link_many(pThis->_sink->mux, pThis->_sink->filesink, nullptr);
+            gst_element_sync_state_with_parent(pThis->_sink->filesink);
+
             qCDebug(VideoReceiverLog) << "Got keyframe, stop dropping buffers";
             pThis->gotFirstRecordingKeyFrame();
         }
