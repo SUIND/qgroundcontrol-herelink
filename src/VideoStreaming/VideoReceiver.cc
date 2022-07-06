@@ -753,7 +753,8 @@ VideoReceiver::startRecording(const QString &videoFile)
     }
     emit videoFileChanged();
     
-    
+    g_object_set(static_cast<gpointer>(_sink->mux), "streamable", true, nullptr);
+    g_object_set(static_cast<gpointer>(_sink->mux), "offset-to-zero", true, nullptr);
     g_object_set(static_cast<gpointer>(_sink->parse), "config-interval", 1, nullptr);
     g_object_set(static_cast<gpointer>(_sink->filesink), "location", qPrintable(_videoFile), nullptr);
     qCDebug(VideoReceiverLog) << "New video file:" << _videoFile;
@@ -933,13 +934,13 @@ VideoReceiver::_keyframeWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_
         } else {
             VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
             // reset the clock
-            GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
-            GstClockTime time = gst_clock_get_time(clock);
-            gst_object_unref(clock);
-            gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
-            gst_element_set_start_time(pThis->_pipeline, GST_CLOCK_TIME_NONE);
-            buf->dts = 0; // The offset will not apply to this current buffer, our first frame, timestamp is zero
-            buf->pts = 0;
+            //GstClock* clock = gst_pipeline_get_clock(GST_PIPELINE(pThis->_pipeline));
+            //GstClockTime time = gst_clock_get_time(clock);
+            //gst_object_unref(clock);
+            //gst_element_set_base_time(pThis->_pipeline, time); // offset pipeline timestamps to start at zero again
+            //gst_element_set_start_time(pThis->_pipeline, GST_CLOCK_TIME_NONE);
+            //buf->dts = 0; // The offset will not apply to this current buffer, our first frame, timestamp is zero
+            //buf->pts = 0;
             qCDebug(VideoReceiverLog) << "Got keyframe, stop dropping buffers";
             pThis->gotFirstRecordingKeyFrame();
         }
@@ -953,10 +954,10 @@ VideoReceiver::_frameWatch(GstPad* pad, GstPadProbeInfo* info, gpointer user_dat
 {
     Q_UNUSED(pad);
     if(info != nullptr && user_data != nullptr) {
-        GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
+        //GstBuffer* buf = gst_pad_probe_info_get_buffer(info);
             //VideoReceiver* pThis = static_cast<VideoReceiver*>(user_data);
-            buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
-            buf->pts = ((GstClockTime) -1);
+            //buf->dts = ((GstClockTime) -1); // The offset will not apply to this current buffer, our first frame, timestamp is zero
+            //buf->pts = ((GstClockTime) -1);
     }
 
     return GST_PAD_PROBE_OK;
