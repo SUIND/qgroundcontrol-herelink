@@ -753,7 +753,7 @@ VideoReceiver::startRecording(const QString &videoFile)
     }
     emit videoFileChanged();
     
-    g_object_set(static_cast<gpointer>(_sink->mux), "streamable", true, nullptr);
+    //g_object_set(static_cast<gpointer>(_sink->mux), "streamable", true, nullptr);
     g_object_set(static_cast<gpointer>(_sink->mux), "offset-to-zero", true, nullptr);
     g_object_set(static_cast<gpointer>(_sink->parse), "config-interval", 1, nullptr);
     g_object_set(static_cast<gpointer>(_sink->filesink), "location", qPrintable(_videoFile), nullptr);
@@ -784,7 +784,7 @@ qCDebug(VideoReceiverLog) << "Before gst_element_sync_state_with_parent() queue"
     // When we hit our first keyframe, we can offset the timestamps appropriately according to the first keyframe time
     // This will ensure the first frame is a keyframe at t=0, and decoding can begin immediately on playback
     GstPad* probepad = gst_element_get_static_pad(_sink->queue, "src");
-    gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _frameWatch, this, nullptr); // to drop the buffer or to block the buffer?
+    //gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _frameWatch, this, nullptr); // to drop the buffer or to block the buffer?
     gst_pad_add_probe(probepad, (GstPadProbeType)(GST_PAD_PROBE_TYPE_BUFFER /* | GST_PAD_PROBE_TYPE_BLOCK */), _keyframeWatch, this, nullptr); // to drop the buffer or to block the buffer?    
     gst_object_unref(probepad);
 
