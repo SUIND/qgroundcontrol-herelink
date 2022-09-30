@@ -2187,9 +2187,9 @@ QStringList MissionController::complexMissionItemNames(void) const
 
     complexItems.append(patternSurveyName);
     complexItems.append(patternCorridorScanName);
-    if (_controllerVehicle->multiRotor() || _controllerVehicle->vtol()) {
-        complexItems.append(patternStructureScanName);
-    }
+//    if (_controllerVehicle->multiRotor() || _controllerVehicle->vtol()) {
+//        complexItems.append(patternStructureScanName);
+//    }
 
     return qgcApp()->toolbox()->corePlugin()->complexMissionItemNames(_controllerVehicle, complexItems);
 }

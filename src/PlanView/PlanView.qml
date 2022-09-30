@@ -1027,76 +1027,76 @@ Item {
                 visible:            _planMasterController.dirty
             }
 
-            SectionHeader {
-                id:                 createSection
-                Layout.fillWidth:   true
-                text:               qsTr("Create Plan")
-                showSpacer:         false
-            }
+//            SectionHeader {
+//                id:                 createSection
+//                Layout.fillWidth:   true
+//                text:               qsTr("Create Plan")
+//                showSpacer:         false
+//            }
 
-            GridLayout {
-                columns:            2
-                columnSpacing:      _margin
-                rowSpacing:         _margin
-                Layout.fillWidth:   true
-                visible:            createSection.visible
+//            GridLayout {
+//                columns:            2
+//                columnSpacing:      _margin
+//                rowSpacing:         _margin
+//                Layout.fillWidth:   true
+//                visible:            createSection.visible
 
-                Repeater {
-                    model: _planMasterController.planCreators
+//                Repeater {
+//                    model: _planMasterController.planCreators
 
-                    Rectangle {
-                        id:     button
-                        width:  ScreenTools.defaultFontPixelHeight * 7
-                        height: planCreatorNameLabel.y + planCreatorNameLabel.height
-                        color:  button.pressed || button.highlighted ? qgcPal.buttonHighlight : qgcPal.button
+//                    Rectangle {
+//                        id:     button
+//                        width:  ScreenTools.defaultFontPixelHeight * 7
+//                        height: planCreatorNameLabel.y + planCreatorNameLabel.height
+//                        color:  button.pressed || button.highlighted ? qgcPal.buttonHighlight : qgcPal.button
 
-                        property bool highlighted: mouseArea.containsMouse
-                        property bool pressed:     mouseArea.pressed
+//                        property bool highlighted: mouseArea.containsMouse
+//                        property bool pressed:     mouseArea.pressed
 
-                        Image {
-                            id:                 planCreatorImage
-                            anchors.left:       parent.left
-                            anchors.right:      parent.right
-                            source:             object.imageResource
-                            sourceSize.width:   width
-                            fillMode:           Image.PreserveAspectFit
-                            mipmap:             true
-                        }
+//                        Image {
+//                            id:                 planCreatorImage
+//                            anchors.left:       parent.left
+//                            anchors.right:      parent.right
+//                            source:             object.imageResource
+//                            sourceSize.width:   width
+//                            fillMode:           Image.PreserveAspectFit
+//                            mipmap:             true
+//                        }
 
-                        QGCLabel {
-                            id:                     planCreatorNameLabel
-                            anchors.top:            planCreatorImage.bottom
-                            anchors.left:           parent.left
-                            anchors.right:          parent.right
-                            horizontalAlignment:    Text.AlignHCenter
-                            text:                   object.name
-                            color:                  button.pressed || button.highlighted ? qgcPal.buttonHighlightText : qgcPal.buttonText
-                        }
+//                        QGCLabel {
+//                            id:                     planCreatorNameLabel
+//                            anchors.top:            planCreatorImage.bottom
+//                            anchors.left:           parent.left
+//                            anchors.right:          parent.right
+//                            horizontalAlignment:    Text.AlignHCenter
+//                            text:                   object.name
+//                            color:                  button.pressed || button.highlighted ? qgcPal.buttonHighlightText : qgcPal.buttonText
+//                        }
 
-                        QGCMouseArea {
-                            id:                 mouseArea
-                            anchors.fill:       parent
-                            hoverEnabled:       true
-                            preventStealing:    true
-                            onClicked:          {
-                                if (_planMasterController.containsItems) {
-                                    createPlanRemoveAllPromptDialogMapCenter = _mapCenter()
-                                    createPlanRemoveAllPromptDialogPlanCreator = object
-                                    mainWindow.showComponentDialog(createPlanRemoveAllPromptDialog, qsTr("Create Plan"), mainWindow.showDialogDefaultWidth, StandardButton.Yes | StandardButton.No)
-                                } else {
-                                    object.createPlan(_mapCenter())
-                                }
-                                dropPanel.hide()
-                            }
+//                        QGCMouseArea {
+//                            id:                 mouseArea
+//                            anchors.fill:       parent
+//                            hoverEnabled:       true
+//                            preventStealing:    true
+//                            onClicked:          {
+//                                if (_planMasterController.containsItems) {
+//                                    createPlanRemoveAllPromptDialogMapCenter = _mapCenter()
+//                                    createPlanRemoveAllPromptDialogPlanCreator = object
+//                                    mainWindow.showComponentDialog(createPlanRemoveAllPromptDialog, qsTr("Create Plan"), mainWindow.showDialogDefaultWidth, StandardButton.Yes | StandardButton.No)
+//                                } else {
+//                                    object.createPlan(_mapCenter())
+//                                }
+//                                dropPanel.hide()
+//                            }
 
-                            function _mapCenter() {
-                                var centerPoint = Qt.point(editorMap.centerViewport.left + (editorMap.centerViewport.width / 2), editorMap.centerViewport.top + (editorMap.centerViewport.height / 2))
-                                return editorMap.toCoordinate(centerPoint, false /* clipToViewPort */)
-                            }
-                        }
-                    }
-                }
-            }
+//                            function _mapCenter() {
+//                                var centerPoint = Qt.point(editorMap.centerViewport.left + (editorMap.centerViewport.width / 2), editorMap.centerViewport.top + (editorMap.centerViewport.height / 2))
+//                                return editorMap.toCoordinate(centerPoint, false /* clipToViewPort */)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
             SectionHeader {
                 id:                 storageSection
